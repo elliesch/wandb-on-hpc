@@ -13,4 +13,4 @@ parameters:
   min_samples_split:
     values: [2, 6, 10]
 
-run_cap: 10            # Stop after 40 total runs across all agents
+run_cap: 10            # Stop after 10 total runs across all agents
