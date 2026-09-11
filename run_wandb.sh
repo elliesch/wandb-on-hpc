@@ -19,7 +19,7 @@ mkdir -p logs
 export PATH=${PATH}:/cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.3.3/x86_64/bin
 
 # Replace with the sweep ID that you saved
-SWEEP_ID="ellianna-wb/nersc-test/nn7lyess"
+SWEEP_ID="username/my-sweep-name/sweepID"
 CONTAINER="wandb_latest.sif"
 
 # Redirect W&B local logs to /tmp to avoid error
