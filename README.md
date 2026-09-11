@@ -1,24 +1,25 @@
-# Running Hyperparameter Sweeps with Weights & Biases on Distributed Systems
+# Running Hyperparameter Sweeps on Distributed Systems with Weights & Biases
 
 In this tutorial, you'll learn:
 
-* Multiple ways to interact with a container from the command line
-* How to automate a hyperparameter sweep with Weights & Biases (W&B) and Slurm arrays
+* Multiple ways to interact with an [Apptainer](https://apptainer.org/docs/user/latest/) container from the command line
+* How to execute parallel jobs in Slurm using [job arrays](https://slurm.schedmd.com/sbatch.html#OPT_array)
+* How to automate a hyperparameter sweep with [Weights & Biases (W&B)](https://wandb.ai/site) and Slurm arrays
 * How to track these runs using the W&B dashboard and Slurm commands
 
 
 ## Today's Tutorial Agenda
 
-* Authenticating Weights & Biases on Sherlock or Farmshare [[link](running-wandb-on-hpc.md#step-1-authenticating-your-weights--biases-account-from-sherlock-or-farmshare)]
+* Authenticating Weights & Biases on NERSC [[link](running-wandb-on-hpc.md#step-1-authenticating-your-weights--biases-account-from-sherlock-or-farmshare)]
 * Setting up your training script [[link](running-wandb-on-hpc.md#step-2-set-up-your-training-script)]
 * Defining your sweep configuration [[link](running-wandb-on-hpc.md#step-2-define-the-sweep-configuration)]
-* Writing an Sbatch script to run your sweept [[link](running-wandb-on-hpc.md#step-3-write-an-sbatch-script-to-run-your-sweep)]
+* Writing an `sbatch` script to run your sweep [[link](running-wandb-on-hpc.md#step-3-write-an-sbatch-script-to-run-your-sweep)]
 * Using `array` to launch parallel `wandb` sweep agents [[link](running-wandb-on-hpc.md#step-4-use-array-in-sbatch-to-launch-perfectly-parallel-wandb-agents)]
 * Monitoring your sweep on the W&B dashboard [[link](running-wandb-on-hpc.md#step-5-monitor-your-sweep-on-the-wb-dashboard)]
 * Retrieve the best sweep configuration [[link](running-wandb-on-hpc.md#step-6-retrieve-the-best-configuration-directly-on-sherlock)]
 
-### Do you have any questions? 
-Please reach out to us at [matrics-bootcamp@stanford.edu](mailto:matrics-bootcamp@stanford.edu) or set up a General Consultation with us at [this link](http://sdss-compute-consultation.stanford.edu/).
+## Want to Learn More?
 
-### Would you like to provide feedback?
-Please provide anonymous feedback [here](https://forms.gle/x3wB8qMPWBbeNosR9).
+- Are you just getting started with running batch jobs in HPC environments? [`sbatch` Tips and Tricks](https://github.com/MATRICS-Bootcamp/estimating-and-requesting-resources/blob/main/sbatch-tips-and-tricks.md)
+- Are you interested in building an Apptainer container for your own software stack? [Build Your First Apptainer Container](https://github.com/stanford-sdss/package-management)
+- Do you want to learn how to scale across multiple GPUs in Python? [Scaling up GPU Compute with PyTorch DDP](https://github.com/MATRICS-Bootcamp/scaling-up-cpus-and-gpus/blob/main/scaling_up_gpu_compute.ipynb)
