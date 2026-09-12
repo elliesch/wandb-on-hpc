@@ -4,19 +4,65 @@ Selecting the right hyperparameters is one of the most time-consuming parts of b
 
 In this tutorial, we'll configure a W&B sweep to tune a random forest classifier, using Slurm array jobs to run multiple search agents in parallel.
 
-To get started, sign up for a [Weights & Biases account](https://app.wandb.ai/login?signup=true). The free tier is usually more than sufficient for academic-scale research projects.
+To get started, please sign up for a [Weights & Biases account](https://app.wandb.ai/login?signup=true). The free tier is usually sufficient for academic-scale research projects.
 
 ---
 
-## Step 1: Authenticating Your Weights & Biases Account from Sherlock or Farmshare
+## Before We Start: Job Arrays for Running Parallel Jobs
+
+Often in computing settings, we find that we need to run the same computing task (such as a simulation codebase or training algorithm) repeatedly with differing inputs. This kind of workflow is called "perfectly parallel," in which your the coded architecture stays the same and the only things that change can be defined as external variables. Hyperparameter sweeps are a great example of this, in which you might want to validate how your outcomes change across a large grid of input variables without varying your model itself. You can manually change these inputs and create unique `sbatch` files for each grid configuration, but Slurm's `--array` flag lets you submit many copies of the same job with a single `sbatch` file instead.
+
+Each of these copies is called a task, and every task is given a unique `$SLURM_ARRAY_TASK_ID` as an environment variable that can be used as an iterator, allowing you to iterate over a collection of variable inputs. Let's see how this works with a concise toy example using `run_arrays.sh` to print `Hello World` from an array of CPUs in parallel.
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=array_intro              # Name your job
+#SBATCH --output=logs/array_%A_%a.out       # .out file to capture outputs
+#SBATCH --error=logs/array_%A_%a.err        # .err files to capture error
+#SBATCH --qos=debug                         # NERSC docs provide a helpful flowchart
+#SBATCH --constraint=cpu                    # Perlmutter requires cpu or gpu spec
+#SBATCH --account=nguest                    # NERSC project associated with this job
+#SBATCH --time=00:05:00                     # Run time in HH:MM:SS
+#SBATCH --mail-type=BEGIN,END,FAIL          # Receive emails with job status
+#SBATCH --mail-user=ellianna@berkeley.edu
+
+# Create log directory
+mkdir -p logs
+
+# Hello World from each array task
+echo "Hello World! From array task ${SLURM_ARRAY_TASK_ID} in job ${SLURM_JOB_ID} on $(hostname)"
+sleep 10
+```
+Once we have our `sbatch` defined, let's launch our array with the following command:
+
+```bash
+sbatch --array=1-4 run_arrays.sh
+```
+While our arrays are running, we can check their run status with:
+
+```bash
+squeue --me
+```
+Once our runs have completed, we can check on their outputs by running:
+```bash
+cat logs/array_jobID_1.out
+cat logs/array_jobID_2.out
+cat logs/array_jobID_3.out
+cat logs/array_jobID_4.out
+```
+We can see all the different `$SLURM_ARRAY_TASK_ID`s even though each array task launched using the same `sbatch` script. We'll use Slurm job arrays below along with Weights & Biases to launch a hyperparameter sweep grid. Before we do, let's get started with W&B on our system.
+
+---
+
+## Step 1: Authenticating Your Weights & Biases Account from NERSC
 
 In order to sync whatever system we're working from to your Weights & Biases account, we'll use an API key. Let's walk through creating a key together in [the API key section](https://wandb.ai/settings#apikeys) of your W&B account settings. 
 
-> **Important Note:** Make sure to save your API key somewhere that you can access in the future. You'll only get to see it once, but that's what you'll use to log in from systems like Sherlock or NSF ACCESS.
+> **Important Note:** Make sure to save your API key somewhere that you can access in the future. You'll only get to see it once, but that's what you'll use to log in from systems like NERSC or NSF ACCESS.
 
-Now that you have an API key, we can use it to authenticate W&B on Sherlock using our handy W&B container. You'll only need to do this once because W&B will save your API key to a `~/.netrc` file in your Sherlock $HOME directory.
+Now that you have an API key, we can use it to authenticate W&B on NERSC using our handy W&B container. You'll only need to do this once because W&B will save your API key to a `~/.netrc` file in your NERSC $HOME directory.
 
-To use W&B, we'll be using the python package `wandb`, and we'll access this using a Python container like Brian showed us yesterday. We'll start by downloading the container from the MATRICS bootcamp GitHub with the following command.
+To use W&B, we'll be using the python package `wandb`, and we'll access this using an Apptainer container configured in Python. We'll start by downloading the container from this GitHub with the following command.
 ```bash
 apptainer pull oras://ghcr.io/matrics-bootcamp/wandb:latest
 ```
@@ -24,12 +70,12 @@ apptainer pull oras://ghcr.io/matrics-bootcamp/wandb:latest
 We'll start by activating a shell inside our container.
 
 ```bash
-apptainer shell wandb.sif
+apptainer shell wandb_latest.sif
 ```
 
 You can tell that you're working from inside the container, because instead of showing the login node:
 ```bash
-[sunet@nodename "login" ~]$
+username@perlmutter:loginXX:/your/path>
 ```
 
 The command line shows the container environment:
@@ -127,7 +173,7 @@ run_cap: 10            # Stop after 40 total runs across all agents
 In order to link our sweep to the W&B dashboard online, we'll need to register our sweep. To do this, run the following command. It's okay to run this from the login node. You can replace `my-project-name` with the name of your project.
 
 ```bash
-apptainer exec wandb.sif \
+apptainer exec wandb_latest.sif \
     wandb sweep sweep.yaml --project my-project-name
 ```
 
@@ -150,7 +196,6 @@ Let's take a closer look at `run_wandb.submit` before we prepare to submit using
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1                 # Run compute on the same node
 #SBATCH --cpus-per-task=16                  # Match n_jobs=-1 in train.py
-#SBATCH --mem=32G                           # Memory floor
 #SBATCH --time=02:00:00                     # Run time in HH:MM:SS
 #SBATCH --mail-type=BEGIN,END,FAIL          # Email on job start, completion, and failure
 #SBATCH --mail-user=sunet@stanford.edu      # On Stanford systems, use your sunet
@@ -160,7 +205,7 @@ mkdir -p logs
 
 # Replace with the sweep ID that you saved
 SWEEP_ID="username/my-project-name/sweepID" #note that this doesn't have /sweeps/ in it
-CONTAINER="wandb.sif"
+CONTAINER="wandb_latest.sif"
 
 # Redirect W&B local logs to /tmp to avoid error
 export WANDB_DIR=/tmp
@@ -220,7 +265,7 @@ Once the sweep finishes, you can find the best run in the W&B Dashboard, or you 
 
 Let's launch a shell from within our container to look more closely:
 ```bash
-apptainer shell wandb.sif
+apptainer shell wandb_latest.sif
 ```
 
 From here we'll launch Python:
@@ -244,7 +289,7 @@ print("Best config:", best_run.config)
 
 1. Register your sweep one time
 ```bash
-apptainer exec wandb.sif \
+apptainer exec wandb_latest.sif \
     wandb sweep sweep.yaml --project my-project-name
 ```
 
