@@ -18,7 +18,7 @@ def main():
         max_depth=config.max_depth,
         min_samples_split=config.min_samples_split,
         random_state=42,
-        n_jobs=-1,  # use all CPUs on the node
+        n_jobs=-1,  # use all CPUs on the node, important when the full node is reserved
     )
 
     # Evaluate with 5-fold cross-validation
