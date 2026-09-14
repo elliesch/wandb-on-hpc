@@ -235,7 +235,7 @@ apptainer exec $CONTAINER \
 Rather than submitting one W&B agent at a time, we can use Slurm's `array` feature to launch multiple agents simultaneously. Each agent independently pulls configurations from the same sweep queue, so they work in parallel without duplicating any runs. When an agent completes a run, it automatically launches the next run, and when all 10 runs (set by `run_cap`) are complete, W&B closes down the compute so you don't have to worry about managing the distribution. `wandb` handles that coordination automatically for us, so we can launch our sweep in just one line. In this case, we're launching 2 agents in compliance with Perlmutter's `debug` QoS, using an array of `1-2`.
 
 ```bash
-sbatch --array=1-2 run_wandb.submit
+sbatch --array=1-2 run_wandb.sh
 ```
 
 The more agents you choose to run, the longer your job will queue, but in large jobs, you'll likely want more than two agents.
@@ -330,7 +330,7 @@ apptainer exec wandb_latest.sif \
 2. Launch parallel W&B sweep agents using Slurm job arrays:
 
 ```bash
-sbatch --array=1-2 run_wandb.submit
+sbatch --array=1-2 run_wandb.sh
 ```
 
 3. Monitor results on the W&B Dashboard:
