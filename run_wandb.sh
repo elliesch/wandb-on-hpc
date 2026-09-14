@@ -7,8 +7,8 @@
 #SBATCH --account=nguest                    # NERSC project associated with this job
 #SBATCH --nodes=1                           # Book jobs on the same node
 #SBATCH --ntasks-per-node=1                 # Select 1 task/node and wandb will spawn
-#SBATCH --cpus-per-task=32                  # Match n_jobs=-1 in train.py
-#SBATCH --time=00:30:00                     # Run time in HH:MM:SS
+#SBATCH --cpus-per-task=128                 # Use the full node
+#SBATCH --time=00:15:00                     # Run time in HH:MM:SS
 #SBATCH --mail-type=BEGIN,END,FAIL          # Receive emails with job status
 #SBATCH --mail-user=ellianna@berkeley.edu   
 
