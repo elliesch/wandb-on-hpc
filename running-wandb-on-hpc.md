@@ -157,7 +157,7 @@ When training our model, we want to define the hyperparameter search space and t
 
 In our `sweep.yaml`, we specify three things: which training script to run, which search strategy to use, and which metric to optimize. Here we use Bayesian optimization (`method: bayes`), which learns from the results of previous runs to make informed decisions about which hyperparameter combinations to try next. This makes our search more efficient than a random or exhaustive grid search, and allows us to save time in this tutorial. 
 
-The `run_cap` field sets the total number of configurations that will be tried across all agents combined, so rather than exhaustively testing every possible combination of our three parameters, W&B will intelligently select 10 configurations to evaluate. Here we limit to a small number so the tutorial will run in reasonable time, but you can try this later without a cap or with a higher cap.
+The `run_cap` field sets the total number of configurations that will be tried across all agents combined, so rather than exhaustively testing every possible combination of our three parameters, W&B will intelligently select the next configuration to evaluate. Here we limit to a small number so the tutorial will run in reasonable time, but you can try this later without a cap or with a higher cap.
 
 ```yaml
 program: wandb_train.py
@@ -175,7 +175,7 @@ parameters:
   min_samples_split:
     values: [2, 6, 10]
 
-run_cap: 10            # Stop after 10 total runs across all agents
+run_cap: 6        # Stop after 6 total runs across all agents
 ```
 
 In order to link our sweep to the W&B dashboard online, we'll need to register our sweep. To do this, run the following command. It's okay to run this from the login node. You should replace `my-project-name` with the intended name of your project.
@@ -185,13 +185,13 @@ apptainer exec wandb_latest.sif \
     wandb sweep sweep.yaml --project my-project-name
 ```
 
-W&B will print a link to your sweep that looks like `username/my-project-name/sweeps/sweepID`. Copy the full path of the sweep ID to somewhere you can access it because you'll need it for the next step. As an example, one of my sweep IDs was `nzabw5am` while testing this tutorial.
+W&B will print a link to your sweep that looks like `username/my-project-name/sweeps/sweepID`. Click on that link, and copy the full path of the sweep ID from the line following it to somewhere you can access it because you'll need it for the next step. As an example, one of my sweep IDs was `nzabw5am` while testing this tutorial.
 
 ---
 
 ## Step 3: Write an Sbatch Script to run your Sweep
 
-We want to write a sbatch script that will allow us to run a single sweep agent across a Slurm job array, one agent per task. Each agent pulls a hyperparameter configuration from `sweep.yaml` then runs `wandb_train.py` with those parameters. Once that particular configuration completes in an array ID, `wandb` reports the result back to the W&B dashboard, and repeats with another configuration from `sweep.yaml` until either the `run_cap` is reached or the job's time limit expires. A few things to note as you fill this script in: set `--cpus-per-task` to match the `n_jobs=-1` argument in your training script, make sure your `SWEEP_ID` follows the format `username/my-project-name/sweepID` without the `/sweeps/` segment that you copied over in the last step. The `WANDB_DIR=/tmp` command prevents a folder naming conflict inside the container.
+We want to write a sbatch script that will allow us to run a single sweep agent across a Slurm job array, one agent per task. In our example, each agent will pull a hyperparameter configuration from `sweep.yaml` then run `wandb_train.py` with those parameters. Once that particular configuration completes its run, `wandb` reports the result back to the W&B dashboard, and repeats with another configuration from `sweep.yaml` until either the `run_cap` is reached or the job's time limit expires. A few things to note as you fill this script in: set `--cpus-per-task` to match the `n_jobs` argument in your `sklearn` model and make sure your `SWEEP_ID` follows the format `username/my-project-name/sweepID`. The `WANDB_DIR=/tmp` command prevents a folder naming conflict inside the container.
 
 Let's take a closer look at `run_wandb.sh` before we prepare to submit using an array in the next step.
 
@@ -202,13 +202,13 @@ Let's take a closer look at `run_wandb.sh` before we prepare to submit using an 
 #SBATCH --error=logs/sweep_%A_%a.err        # .err files to capture error
 #SBATCH --qos=debug                         # NERSC docs provide a helpful flowchart for this
 #SBATCH --constraint=cpu                    # Perlmutter requires you to specify cpu or gpu mode
-#SBATCH --account=nguest                    # NERSC project associated with this job
+#SBATCH --account=your-project              # NERSC project associated with this job
 #SBATCH --nodes=1                           # Book jobs on the same node
 #SBATCH --ntasks-per-node=1                 # Select 1 task/node and wandb will spawn the tasks
 #SBATCH --cpus-per-task=128                 # Match n_jobs in train.py
 #SBATCH --time=00:15:00                     # Run time in HH:MM:SS
 #SBATCH --mail-type=BEGIN,END,FAIL          # Receive emails with job status
-#SBATCH --mail-user=ellianna@berkeley.edu   
+#SBATCH --mail-user=your-email@email.gov   
 
 # Create log directory
 mkdir -p logs
