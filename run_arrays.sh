@@ -4,10 +4,10 @@
 #SBATCH --error=logs/array_%A_%a.err        # .err files to capture error
 #SBATCH --qos=debug                         # NERSC docs provide a helpful flowchart
 #SBATCH --constraint=cpu                    # Perlmutter requires cpu or gpu spec
-#SBATCH --account=nguest		    # NERSC project associated with this job
+#SBATCH --account=your-project      		    # NERSC project associated with this job
 #SBATCH --time=00:05:00                     # Run time in HH:MM:SS
 #SBATCH --mail-type=BEGIN,END,FAIL          # Receive emails with job status
-#SBATCH --mail-user=ellianna@berkeley.edu
+#SBATCH --mail-user=your-email@email.gov
 
 # Create log directory
 mkdir -p logs
