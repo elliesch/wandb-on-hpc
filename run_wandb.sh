@@ -4,13 +4,13 @@
 #SBATCH --error=logs/sweep_%A_%a.err        # .err files to capture error
 #SBATCH --qos=debug                         # NERSC docs provide a helpful flowchart for this
 #SBATCH --constraint=cpu                    # Perlmutter requires you to specify cpu or gpu mode
-#SBATCH --account=nguest                    # NERSC project associated with this job
+#SBATCH --account=your-project              # NERSC project associated with this job
 #SBATCH --nodes=1                           # Book jobs on the same node
 #SBATCH --ntasks-per-node=1                 # Select 1 task/node and wandb will spawn
 #SBATCH --cpus-per-task=128                 # Use the full node
 #SBATCH --time=00:15:00                     # Run time in HH:MM:SS
 #SBATCH --mail-type=BEGIN,END,FAIL          # Receive emails with job status
-#SBATCH --mail-user=ellianna@berkeley.edu   
+#SBATCH --mail-user=your-email@email.gov   
 
 # Create log directory
 mkdir -p logs
