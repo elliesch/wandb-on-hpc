@@ -10,12 +10,12 @@ In this tutorial, you'll learn:
 
 ## Today's Tutorial Agenda
 
-* Authenticating Weights & Biases on NERSC [[link](running-wandb-on-hpc.md#step-1-authenticating-your-weights--biases-account-from-sherlock-or-farmshare)]
-* Launching your W&B sweep configuration [[link](running-wandb-on-hpc.md#step-2-define-the-sweep-configuration)]
-* Writing an `sbatch` script to run your sweep [[link](running-wandb-on-hpc.md#step-3-write-an-sbatch-script-to-run-your-sweep)]
-* Using `array` to launch parallel W&B sweep agents [[link](running-wandb-on-hpc.md#step-4-use-array-in-sbatch-to-launch-perfectly-parallel-wandb-agents)]
-* Monitoring your sweep on the W&B dashboard [[link](running-wandb-on-hpc.md#step-5-monitor-your-sweep-on-the-wb-dashboard)]
-* Retrieving the best sweep configuration using `wandb` [[link](running-wandb-on-hpc.md#step-6-retrieve-the-best-configuration-directly-on-sherlock)]
+* A Quick Intro to Job Arrays [[link](running-wandb-on-hpc.md#before-we-start-job-arrays-for-running-parallel-jobs)]
+* Using a Container to Authenticate Weights & Biases on NERSC [[link](running-wandb-on-hpc.md#step-1-authenticating-your-weights--biases-account-from-nersc)]
+* Initializing a W&B hyperparameter sweep [[link](running-wandb-on-hpc.md#step-2-define-the-sweep-configuration)]
+* Using `array` to launch a parallelized W&B hyperparameter sweep [[link](running-wandb-on-hpc.md#step-4-use-array-in-sbatch-to-launch-perfectly-parallel-wandb-agents)]
+* Monitoring your sweep on the W&B dashboard [[link](running-wandb-on-hpc.md#step-5-monitor-your-sweep-on-the-wb-dashboard))]
+* Retrieving the best sweep configuration using `wandb` [[link](running-wandb-on-hpc.md#step-6-retrieve-the-best-configuration-directly-on-nersc)]
 
 ## Want to Learn More?
 
